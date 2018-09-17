@@ -1,2 +1,2 @@
 # kdbspark
-Scott and Hugh were here
+Brief description of project here.
