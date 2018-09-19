@@ -91,7 +91,7 @@ class WriteTask(partitionId: Int, attemptNumber: Int, jobid: String, schema: Str
             case Kdb.DoubleArrayType => row(i).asInstanceOf[WrappedArray[Array[Double]]].array
             case Kdb.TimestampArrayType => row(i).asInstanceOf[WrappedArray[Array[JTimestamp]]].array
             case Kdb.DateArrayType => row(i).asInstanceOf[WrappedArray[Array[JDate]]].array
-            case MapType(StringType, StringType, true) => toDict(schema(i).dataType, row(i))
+            case MapType(StringType, StringType, true) => toDict(schema(i).dataType, row(i)) //! exper
             case _ => throw new Exception("Unsupported data type" + schema(i).dataType) 
           }
         case _ => throw new Exception("Unsupported data type" + batch(i).getClass)
@@ -106,17 +106,7 @@ class WriteTask(partitionId: Int, attemptNumber: Int, jobid: String, schema: Str
       batchind = 0
     }
   }
-  
-  //! Experimental
-  def toDict(datatype: DataType, data: Any): Object = {
-    val maptype = datatype.asInstanceOf[MapType]
-    // maptype.keyType
-    // maptype.valueType
-    val map = data.asInstanceOf[scala.collection.immutable.Map[String,String]]
     
-    return map.size.toString
-  }
-  
   override def commit(): WriterCommitMessage = {
     truncateBatch(batchind) // Resize batch to fit remaining rows
     writeBatch("commit")  
@@ -178,8 +168,18 @@ class WriteTask(partitionId: Int, attemptNumber: Int, jobid: String, schema: Str
       case Kdb.DoubleArrayType => new Array[Object](bs) 
       case Kdb.TimestampArrayType => new Array[Object](bs)
       case Kdb.DateArrayType => new Array[Object](bs)
-      case MapType(StringType, StringType, true) => new Array[Object](bs)
+      case MapType(StringType, StringType, true) => new Array[Object](bs) //! experimental
       case _ => throw new Exception("Unsupported data type:" + dt)
     }
+  }
+  
+    //! Experimental
+  def toDict(datatype: DataType, data: Any): Object = {
+    val maptype = datatype.asInstanceOf[MapType]
+    // maptype.keyType
+    // maptype.valueType
+    val map = data.asInstanceOf[scala.collection.immutable.Map[String,String]]
+    
+    return map.size.toString
   }
 }
