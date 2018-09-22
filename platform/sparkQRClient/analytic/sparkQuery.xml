@@ -1,0 +1,116 @@
+<analytic>
+	<analytic>sparkQuery</analytic>
+	<code_text>
+.al.loadinstruction[`spark]
+
+//
+// @desc Test function to test Spark kdb+ Datasource. 
+//
+// @param options {dict} Specifies all of the ".option(x,y)" values in the read call. Also
+//		the partition number &lt;partnum&gt; is also included (0=query call, &gt;0 specific partition)
+// @param filters {list} Specifies a list of pushdown filters from Spark
+//
+// @result is either a list describing the schema (meta) of the resultant table
+// or the table itself.
+//
+testQuery:{[options;filters;columns]
+    .log.out[.z.h;"Running testQuery";`];
+	.spark.assertOptionsDict[options]; // Validate argument
+
+	partnum:0|"J"$options`partnum;
+
+	
+	// Build one-row table from which we can report the query's schema back to Spark
+	stbl:([]
+		partition:1#0h;
+		clcolumn:1#enlist "abc"; / c-list
+		bcolumn:1#0b;
+		gcolumn:1#0Ng;
+		xcolumn:1#0x00;
+		hcolumn:1#0h;
+		icolumn:1#0i;
+		ilcolumn:1#enlist 1 2i;
+		jcolumn:1#0j;
+		jlcolumn:1#enlist 1 2;
+		ecolumn:1#0e;
+		elcolumn:1#enlist 1 2e;
+		fcolumn:1#0f;
+		flcolumn:1#enlist 1 2f;
+		ccolumn:1#"0";
+		scolumn:1#`0;
+		pcolumn:1#.z.p;
+		mcolumn:1#2000.01m;
+		dcolumn:1#.z.d;
+		zcolumn:1#.z.z;
+		tcolumn:1#.z.t
+		);
+
+	// A partition number of 0 means that Spark just wants the schema
+	if[partnum=0;
+		:.spark.assertSchemaResult value flip `c`t#0!meta stbl
+		];
+
+	// "Query" code follows. In this case, provide various datatypes to test
+	// Spark Datasource
+	numrows:1|"J"$options`numrows; / Number of rows to generate for test
+
+	system "S 314159"; / Produce same random results each time (for testing)
+
+	NSONESEC:1000000000; / One second in nanoseconds
+	MSONESEC:1000; / and also in milliseconds
+
+	rtbl:([]
+		partition:numrows#"h"$partnum;
+		clcolumn:(numrows?26)#\:"abcdefghijklmnopqrstuvwxyz"; / c-list
+		bcolumn:numrows#01b;
+		gcolumn:numrows?0Ng;
+		xcolumn:numrows?0xFF;
+		hcolumn:numrows?100h;
+		icolumn:numrows?1000i;
+		ilcolumn:numrows#(1#1i;100 200i;"i"$reverse til 5);
+		jcolumn:numrows?10000j;
+		jlcolumn:numrows#(1#1;100 200;reverse til 10);
+		ecolumn:numrows?100e;
+		elcolumn:numrows#(1#.1e;100 200e;"e"$.1*til 10);
+		fcolumn:numrows?1000f;
+		flcolumn:numrows#(1#.1f;100 200f;"f"$.1*til 10);
+		ccolumn:numrows#"abcdef";
+		scolumn:numrows#`$"s",/:string each til 100;
+		pcolumn:2018.07.01D00:00:00.123456+NSONESEC*til numrows;
+		mcolumn:2000.01m+til numrows;
+		dcolumn:2018.07.01+til numrows;
+		zcolumn:2018.07.01T0+til numrows;
+		tcolumn:00:00:00.000+500*til numrows
+		);
+
+	?[rtbl;.spark.convFilters[rtbl;filters];0b;columns!columns]
+	}
+
+
+
+// @desc A bare minimum query function
+//
+// @param options {dict} Specifies a symbol to string dictionary
+//
+spartanQuery:{[options;filters;columns]
+    .log.out[.z.h;"Running spartanQuery";`];
+	system "S 314159"; / Produce same random results each time (for testing)
+
+	if[0=0|"J"$options`partnum; / If partition 0 (request for schema)
+		:(`h`j`f;"hjf")]; / then return schema
+
+	rtbl:([] h:"h"$til 10;j:100*til 10;f:10?1.0);
+
+	?[rtbl;.spark.convFilters[rtbl;filters];0b;columns!columns]
+	}</code_text>
+	<description>.spark namespace functions provided from Hugh as a script</description>
+	<dictionaryparams>0</dictionaryparams>
+	<typ>Instruction</typ>
+	<private>1</private>
+	<returntype></returntype>
+	<returndata></returndata>
+	<defaultconnection></defaultconnection>
+	<alias></alias>
+	<analytictype>polling</analytictype>
+	<returndescription></returndescription>
+</analytic>

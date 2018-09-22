@@ -1,0 +1,17 @@
+<analytic>
+	<analytic>sparkQueryProcessInit</analytic>
+	<code_text>{[]
+	.log.out[.z.h;"Initialising the Spark Query Process";`];
+    .al.loadinstruction[`examples];
+	}</code_text>
+	<description>sparkQueryProcess instance initialisation function. Loads the instructions which wrap Hugh's .spark scripts</description>
+	<dictionaryparams>0</dictionaryparams>
+	<typ>Analytic</typ>
+	<private>1</private>
+	<returntype></returntype>
+	<returndata></returndata>
+	<defaultconnection></defaultconnection>
+	<alias></alias>
+	<analytictype>polling</analytictype>
+	<returndescription></returndescription>
+</analytic>
