@@ -14,50 +14,36 @@ sampleTable:([]
 	)
 
 sampleQuery:{[opt]
-	//
+	
 	// The options parameter may contain a key whose value indicates a required
 	// logging level (i.e., error, warn, trace). If none is provided, we default
 	// to warn.
-	//
 	.sp.setLogLevel .sp.optGet[opt;`loglevel;`warn];
 
-	//
 	// Display the name of this function, to provide context to the trace 
 	// message that follow
-	//
 	.sp.logDebug "sampleQuery[]";
 
-	//
 	// Display out all values in options provided by the Spark caller
-	//
 	.sp.logDebugOptions[opt];
 
-	//
 	// Retrieve the partition number as provided by the Spark connector. The
 	// value can either by -1 (request to return the query schema), or a number
 	// between 0 and numPartitions-1, which is the ordinal number of the partition 
 	// requesting query data.
-	//
 	partitionid:opt`partitionid;
 
-	//
 	// A call with partition -1 means that Spark wants the schema (or meta) of the
 	// query result so it can prepare its data frames to receive the data.
-	//
 	if[partitionid=-1;
-		//
 		// We only need to return column c and t, but the Spark connector ignores
 		// the other columns if they are provided
-		//
 		schema:`c`t#0!meta sampleTable; / Unkey meta table and select name and type
 
-		//
 		// Indicate to Spark which columns contain nulls, so that the user can
 		// accommodate them in calculations. We do this by adding an additional
 		// boolean column <n> to the schema result, where 1b denotes nullable
-		//
 		// Let's assume that column <jcolumn> can contain nulls
-		//
 		schema:update n:c in `jcolumn from schema;
 
 		.sp.checkSchemaResult schema; / Handy utility that asserts if the result is formed correctly
@@ -66,31 +52,22 @@ sampleQuery:{[opt]
 		:schema / Return the unkeyed meta result
 		];
 
-	//
 	// Select some of our table. In this example, we use the partition number that
 	// came from options in the where clause
-	//
 	res:select from sampleTable where shardid=partitionid;
 
-	//
 	// In the event that the Spark user wanted to prune some columns and apply
 	// push-down filters, use this utility, which converts the filters and pruned
 	// columns into kdb+ functional form.
-	//
 	res:.sp.pruneAndFilter[opt;res];
 
-	//
 	// As an alternative to above, and potentially more efficient, we could combine 
 	// the constraint in the where clause above with the filters found in options, as
 	// follows:
-	//
 	// 		filters:enlist[(`eq;`shardid;paritionid)],opt`filters;
 	// 		res:.sp.pruneAndFilter[res;filters;opt`columns];
-	//
-
-	//
+	
 	// Report summary information about the result
-	//
 	.sp.logDebugTable[res];
 	
 	res
@@ -176,10 +153,8 @@ exampleNulls:{[opt]
 		vcolumn:0Nv,12:23:56
 	);
 
-	//
 	// A custom option is provided to test null/no null support:
 	//		.option("nullSupport", boolean)
-	//
 	if[-1=.sp.optGet[opt;`partitionid;-1]; 
 		nullsupport:.sp.optGetBoolean[opt;`nullsupport;1b];
 		:update n:nullsupport from 0!meta tbl; 
@@ -200,9 +175,7 @@ exampleCommonTypes:{[opt]
 	partitionid:.sp.optGet[opt;`partitionid;-1];
 	.sp.logDebug string partitionid;
 
-	//
 	// Build one-row table from which we can report the query's schema back to Spark
-	//
 	stbl:([]
 		shardid:1#0h;
 		clcolumn:1#enlist "abc"; / c-list
@@ -226,20 +199,16 @@ exampleCommonTypes:{[opt]
 		vcolumn:1#00:00:00
 		);
 
-	//
 	// A partition number of -1 means that Spark just wants the schema
-	//
 	if[partitionid=-1;
 		res:0!meta stbl;
 		.sp.logDebugSchema[res]; 
 		:res
 		];
 
-	//
 	// "Query" code follows. In this case, provide all datatypes to test
 	// Spark Datasource
-	//
-
+	
 	numrows:"J"$.sp.optGet[opt;`numrows;"10"]; / Number of rows to generate for test
 
 	system "S 1"; / Produce same random results each time (for testing)
@@ -285,9 +254,7 @@ exampleArrayTypes:{[opt]
 
 	partitionid:.sp.optGet[opt;`partitionid;-1];
 
-	//
 	// Build one-row table from which we can report the query's schema back to Spark
-	//
 	stbl:([]
 		xlcolumn:1#enlist 1#0x;
 		hlcolumn:1#enlist 1#0h;
@@ -300,9 +267,7 @@ exampleArrayTypes:{[opt]
 		dlcolumn:1#enlist 1#.z.d
 		);
 
-	//
 	// A partition number of -1 means that Spark just wants the schema
-	//
 	if[partitionid=-1;
 		res:0!meta stbl;
 		.sp.logDebugSchema[res]; 

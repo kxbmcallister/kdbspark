@@ -60,6 +60,8 @@ object Util {
  * Singleton object calling kdb+ functions
  */
 object Kdb {
+  @transient lazy val log = org.apache.log4j.Logger.getLogger("Kdb")
+
   def schema(options: java.util.Map[String,String]): Object = {
     val hostind = 0 // Use first host to get schema
     val res = call(hostind, options, optionsToDict(options, Map[String,Object]()), null)
@@ -110,15 +112,27 @@ object Kdb {
     else
       Array(fexpr.toCharArray, arg1, arg2)      
 
-    val platformTarget = optGet(options, "platformtarget", "")
-    if (platformTarget.length > 0) {
- //TODO: Brendan's platform code, wrapping <req>     
-    }
-      
     val con = new c(host, port, userpass, useTLS)
-    val res = con.k(req)        
-    con.close()  
-    res
+    
+    val platformTarget = optGet(options, "platformtarget", "")
+    log.info("PT:" + platformTarget)
+    if (platformTarget.length > 0) {
+      val queryObj = Array(".qrClient.request", req, platformTarget)
+      // This is the query id of the query being executed
+      val confirmReceive = con.k(queryObj)
+      // Need a timeout to stop this blocking forever
+      con.setTimeout(20)
+      val obj = con.k()
+      con.close()  
+      // Need to remove the 'qrResult' object from the front of the query
+      val data = obj.asInstanceOf[Array[Object]]
+      log.info("data:" + java.util.Arrays.deepToString(data))
+      data(1)
+    } else {
+      val res = con.k(req)  
+      con.close()  
+      res
+    }
   }  
   
   def optGet(options: java.util.Map[String,String], key: String, default: String): String = 
