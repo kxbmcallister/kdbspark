@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Date;
@@ -127,6 +128,17 @@ public class c implements Serializable {
   public void zip(boolean b){
     zip=b;
   }
+
+   /**
+   * Sets the socket timeout
+   * 
+   * @param timeoutSec timeout in seconds
+   * 
+   */
+  public void setTimeout(int timeoutSec) throws SocketException{
+    this.s.setSoTimeout(timeoutSec * 1000);
+  }
+
   /**
    * Prepare socket for kdb+ ipc comms
    * @param x socket to setup
