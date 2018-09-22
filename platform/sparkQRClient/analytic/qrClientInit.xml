@@ -1,0 +1,64 @@
+<analytic>
+	<analytic>qrClientInit</analytic>
+	<code_text>// Set up requests schema
+.qrClient.i.requests:`id xkey flip `id`handle!(enlist 0Ng;enlist 0Ni);
+
+//
+// @desc Register callback to set as a QR Client
+//
+.qr.client.register1[`qrClient; 30i; {[]
+        .log.out[.z.h;"QR now available";`];
+        .qrClient.qrAvailable:1b;
+        }
+    ];
+
+// 
+// @desc Returns if the QR is available
+//
+// @result Boolean whether the QR is ready to accept queries
+//
+.qrClient.qrAvailable:{[]
+    :.qrClient.qrAvailable;
+    };
+
+// Internal function used to process results from the QR
+.qrClient.i.processResult:{[myId;result] 
+    .log.out[.z.h;"Received Result for ", string myId;`];
+    .bma.myId:myId;
+    .bma.result:result;
+    handle:first exec handle from .qrClient.i.requests where id=myId;
+    if[handle&lt;1;
+        (.log.out[.z.h;"Unable to identify client. Handle invalid";handle];
+        :0b;);
+        ];
+    delete from `.qrClient.i.requests where id=myId;
+    neg[handle] (`qrResult;result);
+    };
+
+// 
+// @desc Receive requests to submit to the QR
+//
+// @param request is an object array containing the function and parameters
+// @param target is the instance or connection group to execute the request on. Passed to the QR
+//
+// @return A request Id
+//
+.qrClient.request:{[request;target]
+    .log.out[.z.h;"Request received from ",string .z.w;`];
+    .bma.request:request;
+    .bma.target:target;
+    id:first -1?0Ng;
+    `.qrClient.i.requests upsert (`id`handle)!(id;.z.w);
+    :.qr.client.sendRequest[request; target; .qrClient.i.processResult[id;]; (`timeout)!(60i)];
+    };</code_text>
+	<description></description>
+	<dictionaryparams>0</dictionaryparams>
+	<typ>Instruction</typ>
+	<private>1</private>
+	<returntype></returntype>
+	<returndata></returndata>
+	<defaultconnection></defaultconnection>
+	<alias></alias>
+	<analytictype>polling</analytictype>
+	<returndescription></returndescription>
+</analytic>

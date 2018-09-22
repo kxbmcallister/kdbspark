@@ -1,0 +1,19 @@
+<analytic>
+	<analytic>sparkQrClientInit</analytic>
+	<code_text>{[]
+    .log.out[.z.h;"Initialising Spark QR Proxy";`];
+    .qrClient.qrAvailable:0b;
+	.al.loadinstruction[`qrClientInit];
+    
+	}</code_text>
+	<description></description>
+	<dictionaryparams>0</dictionaryparams>
+	<typ>Analytic</typ>
+	<private>0</private>
+	<returntype></returntype>
+	<returndata></returndata>
+	<defaultconnection></defaultconnection>
+	<alias></alias>
+	<analytictype></analytictype>
+	<returndescription></returndescription>
+</analytic>
